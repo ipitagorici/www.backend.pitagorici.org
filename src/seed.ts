@@ -1,8 +1,7 @@
-import Database, { SqliteError } from "better-sqlite3";
+import Database from "better-sqlite3";
 import path from "node:path";
 
 // 1. Connessione al database
-// Usa un percorso relativo come './database.db' per comodità di sviluppo
 const db = new Database(path.resolve('storage', 'database.db'));
 db.pragma('foreign_keys = ON');
 
