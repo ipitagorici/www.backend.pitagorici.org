@@ -1,14 +1,12 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 
-// 1. Connessione al database
 const db = new Database(path.resolve('storage', 'database.db'));
 db.pragma('foreign_keys = ON');
 
 console.log("Inizializzazione del database...");
 
-// 2. Definizione dello Schema e dei Dati
-const seedSQL = `
+const seedSQL: string = `
 -- Pulisci il database esistente (utile se esegui lo script più volte)
 DROP TABLE IF EXISTS ARTICOLI;
 DROP TABLE IF EXISTS FOTO;
@@ -109,9 +107,7 @@ INSERT INTO ARTICOLI (rassegna_id, testata_id, data_pubblicazione, estratto, lin
 (4, 1, '2025-04-03', 'La Notte Pitagorica dell''istituto Pascal sbarca al Petrella di Longiano', 'https://www.cesenatoday.it/eventi/la-notte-pitagorica-del-istituto-pascal-comandini-in-scena-al-petrella-5-aprile.html');
 `;
 
-// 3. Esecuzione tramite transazione (più sicuro e veloce)
 try {
-    // exec() permette di eseguire query multiple separate da punto e virgola
     db.exec(seedSQL);
     console.log("[SUCCESS] Database popolato con successo!");
 } catch (error) {
