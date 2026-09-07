@@ -1,6 +1,17 @@
+import { IRassegneRepository } from './application/repositories/IRassegneRepository';
+import { IPhotosRepository } from './application/repositories/IPhotosRepository';
+import { ILocationRepository } from './application/repositories/ILocationRepository';
+import { SQLRassegneRepository } from './infrastructure/repositories/sql/SQLRassegneRepository';
+import { SQLPhotosRepository } from './infrastructure/repositories/sql/SQLPhotosRepository';
+import { SQLLocationRepository } from './infrastructure/repositories/sql/SQLLocationRepository';
 import 'dotenv/config'
-import { controller } from "./controller"
+import { HTTPController } from './presentation/HTTPcontroller';
 import express from 'express'
+
+const rassegneRepository: IRassegneRepository = new SQLRassegneRepository()
+const photosRepository: IPhotosRepository = new SQLPhotosRepository()
+const locationRepository: ILocationRepository = new SQLLocationRepository()
+const controller = new HTTPController(rassegneRepository, locationRepository, photosRepository);
 
 const app = express();
 

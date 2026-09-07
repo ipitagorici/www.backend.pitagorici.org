@@ -3,5 +3,5 @@ export type RassegnaProgrammata = {
   nome: string,
   data: Date,
   descrizione?: string
-  localita_id: string
+  localita_id: number
 }
