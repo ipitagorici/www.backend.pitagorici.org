@@ -3,5 +3,6 @@ export type RassegnaProgrammata = {
   nome: string,
   data: Date,
   descrizione?: string
-  localita_id: number
+  localita_id: number,
+  link_prenotazione?: string,
 }

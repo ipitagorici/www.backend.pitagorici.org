@@ -5,17 +5,22 @@ import { QueryResult } from "../../shared_kernel/Result";
 import { RassegnaProgrammataDTO } from "../dto/RassegnaProgrammataDTO";
 import { ILocationRepository } from "../repositories/ILocationRepository";
 import { RassegnaProgrammataMapper } from "../mappers/RassegnaProgrammataMapper";
+import { ISponsorMaterialRepository } from "../repositories/ISponsorMaterialRepository";
 
 export class GetScheduledRassegneUseCase {
+
   private rassegneRepository: IRassegneRepository;
   private localitaRepository: ILocationRepository;
+  private sponsoringMaterialRepository: ISponsorMaterialRepository;
   
   constructor(
     rassegneRepository: IRassegneRepository,
-    localitaRepository: ILocationRepository
+    localitaRepository: ILocationRepository,
+    sponsoringMaterialRepository: ISponsorMaterialRepository
   ) {
     this.rassegneRepository = rassegneRepository;
     this.localitaRepository = localitaRepository;
+    this.sponsoringMaterialRepository = sponsoringMaterialRepository;
   }
 
   execute(): QueryResult<Array<RassegnaProgrammataDTO>> {
@@ -27,9 +32,10 @@ export class GetScheduledRassegneUseCase {
     if (!correspondingLocations) {
       QueryResult.fail(Error.failure("Something went wrong when fetching locations for each scheduled event."), [])
     }
+    const sponsoringMaterials = events.map(rassegna => this.sponsoringMaterialRepository.getByRassegnaID(rassegna.id))
     const dtos = events
-      .zipWith(correspondingLocations)
-      .map(( [event, location] ) => RassegnaProgrammataMapper.toDTO(event, location))
+      .zipWith(correspondingLocations, sponsoringMaterials)
+      .map(( [event, location, sponsorMaterial] ) => RassegnaProgrammataMapper.toDTO(event, location, sponsorMaterial))
     return QueryResult.ok(dtos)
   }
 }

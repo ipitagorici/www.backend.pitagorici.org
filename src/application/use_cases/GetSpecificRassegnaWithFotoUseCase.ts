@@ -5,20 +5,25 @@ import { QueryResult } from "../../shared_kernel/Result";
 import { PastRassegnaWithPhotosMapper } from "../mappers/PastRassegnaWithPhotosMapper";
 import { PastRassegnaWithFotoDTO } from "../dto/PastRassegnaWithFotoDTO";
 import { ILocationRepository } from "../repositories/ILocationRepository";
+import { ISponsorMaterialRepository } from "../repositories/ISponsorMaterialRepository";
 
 export class GetSpecificRassegnaWithFotoUseCase {
+  
   private rassegneRepository: IRassegneRepository;
   private photosRepository: IPhotosRepository;
   private locationRepository: ILocationRepository;
+  private sponsoringMaterialRepository: ISponsorMaterialRepository;
   
   public constructor(
     rassegneRepository: IRassegneRepository,
     locationRepository: ILocationRepository,
-    photosRepository: IPhotosRepository
+    photosRepository: IPhotosRepository,
+    sponsoringMaterialRepository: ISponsorMaterialRepository
   ) {
     this.rassegneRepository = rassegneRepository;
     this.locationRepository = locationRepository;
     this.photosRepository = photosRepository;
+    this.sponsoringMaterialRepository = sponsoringMaterialRepository;
   }
 
   public execute(id: number): QueryResult<PastRassegnaWithFotoDTO> {
@@ -31,6 +36,7 @@ export class GetSpecificRassegnaWithFotoUseCase {
       return QueryResult.fail(Error.failure("Something went wrong when fetching corresponding locations for past events!"))
     }
     const attachedPhotos = this.photosRepository.getByRassegnaID(pastEvent.id) ?? []
-    return QueryResult.ok(PastRassegnaWithPhotosMapper.toDTO(pastEvent, correspondingLocation, attachedPhotos))
+    const sponsoringMaterial = this.sponsoringMaterialRepository.getByRassegnaID(pastEvent.id)
+    return QueryResult.ok(PastRassegnaWithPhotosMapper.toDTO(pastEvent, correspondingLocation, attachedPhotos, sponsoringMaterial))
   }
 }
