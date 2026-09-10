@@ -3,6 +3,7 @@ import { PastRassegnaDTO } from "../dto/PastRassegnaDTO";
 
 export class PastRassegnaMapper {
   public static toDTO(rassegna: Rassegna, location: { nome: string, citta: string }): PastRassegnaDTO {
-    return { ...rassegna, localita: location }
+    const { localita_id, ...restRassegna } = rassegna
+    return { ...restRassegna, localita: location }
   }
 }

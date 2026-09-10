@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import DefaultController from "../controller/DefaultController";
+import DefaultController from "../controllers/DefaultController";
 import { ErrorTypes } from "../../shared_kernel/ErrorTypes";
 import { Error } from "../../shared_kernel/Error";
 
@@ -48,9 +48,7 @@ export default function DefaultRouter(controller: DefaultController): Router {
       fatal(articles.getError(), res);
       return;
     }
-    res.status(200).send({
-      articles: articles.getValue()
-    })
+    res.status(200).send(articles.getValue())
   })
   
   router.get("/next-events", (_, res) => {
@@ -73,5 +71,6 @@ export default function DefaultRouter(controller: DefaultController): Router {
     }
     res.status(200).send(event.getValue())
   })
+  
   return router
 }

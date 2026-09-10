@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 
-const db = new Database(path.resolve('storage', 'database.db'));
+const db = new Database(path.resolve(__dirname, '../storage', 'database.db'));
 db.pragma('foreign_keys = ON');
 
 console.log("Inizializzazione del database...");
@@ -69,6 +69,7 @@ CREATE TABLE MATERIALI_PUBBLICITARI (
     nome TEXT,
     larghezza INTEGER,
     altezza INTEGER,
+    contenuto BLOB,
     rassegna_id INTEGER NOT NULL,
     FOREIGN KEY (rassegna_id) REFERENCES RASSEGNE(id)
 );

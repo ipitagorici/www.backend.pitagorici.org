@@ -27,7 +27,9 @@ export class GetSpecificRassegnaWithFotoUseCase {
   }
 
   public execute(id: number): QueryResult<PastRassegnaWithFotoDTO> {
-    const pastEvent = this.rassegneRepository.getById(id)
+    const pastEvent = this.rassegneRepository.getPastEvents()
+      .filter(rassegna => rassegna.id === id)
+      .pop()
     if (!pastEvent) {
       return QueryResult.fail(Error.notFound("Cannot find event with ID: " + id))
     }

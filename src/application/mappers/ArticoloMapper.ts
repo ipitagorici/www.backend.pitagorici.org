@@ -4,6 +4,12 @@ import { ArticoloDTO } from "../dto/ArticoloDTO";
 
 export class ArticoloMapper {
   public static toDTO(articolo: Articolo, testata: TestataGiornalistica): ArticoloDTO {
-    return { ...articolo, testata }
+    const { rassegna_id, testata_id, ...articoloData } = articolo;
+    const { id, ...testataData } = testata;
+
+    return {
+      ...articoloData,
+      testata: testataData,
+    };
   }
 }

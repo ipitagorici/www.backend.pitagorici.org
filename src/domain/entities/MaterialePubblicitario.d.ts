@@ -3,5 +3,6 @@ export type MaterialePubblicitario = {
   rassegna_id: number,
   nome: string,
   altezza: number,
-  larghezza: number
+  larghezza: number,
+  contenuto: Buffer
 }

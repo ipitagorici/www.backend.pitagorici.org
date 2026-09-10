@@ -5,6 +5,13 @@ import { PastRassegnaWithFotoDTO } from "../dto/PastRassegnaWithFotoDTO";
 
 export class PastRassegnaWithPhotosMapper {
   public static toDTO(rassegna: Rassegna, location: { nome: string, citta: string }, photos: Foto[], locandina?: MaterialePubblicitario): PastRassegnaWithFotoDTO {
-    return { ...rassegna, localita: location, foto: photos, locandina } as PastRassegnaWithFotoDTO
+    const { localita_id, ...restRassegna } = rassegna;
+    const { rassegna_id, ...restLocandina } = locandina ?? {}; 
+    return {
+      ...restRassegna,
+      localita: location,
+      foto: photos,
+      locandina: { ...restLocandina },
+    } as PastRassegnaWithFotoDTO;
   }
 } 

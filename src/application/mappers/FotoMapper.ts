@@ -3,6 +3,7 @@ import { FotoDTO } from "../dto/FotoDTO";
 
 export class FotoMapper {
   public static toDTO(foto: Foto): FotoDTO {
-    return foto 
+    const { rassegna_id, ...rest } = foto;
+    return rest 
   }
 } 
