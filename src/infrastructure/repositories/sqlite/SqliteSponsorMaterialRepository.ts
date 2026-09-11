@@ -7,7 +7,7 @@ export class SqliteSponsorMaterialRepository implements ISponsorMaterialReposito
   constructor(private database: Database) { }
   
   getByRassegnaID(rassegnaID: number): MaterialePubblicitario {
-    const query = this.database.prepare("SELECT * FROM MATERIALI_PUBBLICITARI WHERE rassegna_id = ?")
+    const query = this.database.prepare("SELECT * FROM MATERIALI_PUBBLICITARI WHERE rassegna_programmata_id = ?")
     return query.get(rassegnaID) as MaterialePubblicitario
   }
   

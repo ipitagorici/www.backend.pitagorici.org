@@ -11,11 +11,11 @@ export class GetRandomPhotosUseCase {
     this.photosRepository = photosRepository;
   }
 
-  public execute(quantity: number): QueryResult<Array<FotoDTO>> {
+  public async execute(quantity: number): Promise<QueryResult<Array<FotoDTO>>> {
     if (quantity <= 0) {
       return QueryResult.fail(Error.invalid("Cannot get negative or zero photos! [Requiring " + quantity + " photos]"))
     }
-    const result = this.photosRepository.getRandom(quantity)
+    const result = await this.photosRepository.getRandom(quantity)
     return (!result) ? 
       QueryResult.fail(Error.failure("Something went wrong when trying to fetch " + quantity + " random photos!"), []) :
       QueryResult.ok(result.map(foto => FotoMapper.toDTO(foto)))

@@ -10,7 +10,7 @@ const fatal = (error: Error, response: Response): void => {
   });
 }
 
-export default function DefaultRouter(controller: DefaultController): Router {
+export default function OpenRouter(controller: DefaultController): Router {
   const router = Router()
   
   router.get("/health", (_, res) => {
@@ -30,9 +30,9 @@ export default function DefaultRouter(controller: DefaultController): Router {
     })
   })
   
-  router.get("/random-photos", (req, res) => {
+  router.get("/random-photos", async (req, res) => {
     const amountRequired: number = Number(req.query.amount)
-    const randomPhotos = controller.getRandomPhotos(amountRequired)
+    const randomPhotos = await controller.getRandomPhotos(amountRequired)
     if (randomPhotos.isFailure()) {
       fatal(randomPhotos.getError(), res);
       return;
@@ -62,9 +62,9 @@ export default function DefaultRouter(controller: DefaultController): Router {
     })
   })
 
-  router.get("/past-event/:id", (req, res) => {
+  router.get("/past-event/:id", async (req, res) => {
     const pastEventID: number = Number(req.params.id);
-    const event = controller.getPastRassegnaWithPhotos(pastEventID);
+    const event = await controller.getPastRassegnaWithPhotos(pastEventID);
     if (event.isFailure()) {
       fatal(event.getError(), res);
       return;

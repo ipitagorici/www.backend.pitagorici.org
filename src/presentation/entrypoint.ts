@@ -4,20 +4,22 @@ import { IPhotosRepository } from '../application/repositories/IPhotosRepository
 import { ILocationRepository } from '../application/repositories/ILocationRepository';
 import { IArticleRepository } from '../application/repositories/IArticleRepository';
 import { SqliteRassegneRepository } from '../infrastructure/repositories/sqlite/SqliteRassegneRepository';
-import { SqlitePhotosRepository } from '../infrastructure/repositories/sqlite/SqlitePhotosRepository';
+import { SqliteAlbumRepository } from '../infrastructure/repositories/sqlite/SqliteAlbumRepository';
 import { SqliteLocationRepository } from '../infrastructure/repositories/sqlite/SqliteLocationRepository';
 import { ISponsorMaterialRepository } from "../application/repositories/ISponsorMaterialRepository";
 import { INewspaperRepository } from "../application/repositories/INewspaperRepository";
 import 'dotenv/config'
 import DefaultController from './controllers/DefaultController';
-import DefaultRouter from './routers/DefaultRouter';
+import OpenRouter from './routers/OpenRouter';
 import express from 'express'
 import Database, { Database as SqliteDatabase } from "better-sqlite3";
 import path from "node:path";
 import { SqliteArticleRepository } from "../infrastructure/repositories/sqlite/SqliteArticleRepository";
 import { SqliteSponsorMaterialRepository } from "../infrastructure/repositories/sqlite/SqliteSponsorMaterialRepository";
 import { SqliteNewspaperRepository } from "../infrastructure/repositories/sqlite/SqliteNewspaperRepository";
-import { exit } from "node:process";
+import { env, exit } from "node:process";
+import FlickrPhotosRepository from "../infrastructure/repositories/flickr/FlickrPhotosRepository";
+import { IAlbumRepository } from "../application/repositories/IAlbumRepository";
 
 const DB_FILENAME = "database.db";
 const DB_PATH: string = path.resolve(__dirname, "../../storage/", DB_FILENAME)
@@ -34,7 +36,8 @@ database.pragma('journal_mode = WAL');
 database.pragma('foreign_keys = ON');
 
 const rassegneRepository: IRassegneRepository = new SqliteRassegneRepository(database);
-const photosRepository: IPhotosRepository = new SqlitePhotosRepository(database);
+const albumRepository: IAlbumRepository = new SqliteAlbumRepository(database);
+const photosRepository: IPhotosRepository = new FlickrPhotosRepository(env.FLICKR_API_KEY, env.FLICKR_USER_ID);
 const locationRepository: ILocationRepository = new SqliteLocationRepository(database);
 const articlesRepository: IArticleRepository = new SqliteArticleRepository(database);
 const sponsoringMaterialRepository: ISponsorMaterialRepository = new SqliteSponsorMaterialRepository(database);
@@ -43,6 +46,7 @@ const newspaperRepository: INewspaperRepository = new SqliteNewspaperRepository(
 const defaultController = new DefaultController(
   rassegneRepository,
   locationRepository,
+  albumRepository,
   photosRepository,
   articlesRepository,
   sponsoringMaterialRepository,
@@ -55,7 +59,7 @@ const BASE_URL = "/api";
 
 // Middlewares & Routers
 app.use(express.json());
-app.use(BASE_URL, DefaultRouter(defaultController))
+app.use(BASE_URL, OpenRouter(defaultController))
 // app.use(PROTECTED_ROUTE, ProtectedRouter(protectedController))
 
 const DEFAULT_PORT = 3000;

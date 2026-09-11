@@ -1,6 +1,6 @@
 import { Foto } from "../../domain/entities/Foto";
 
 export interface IPhotosRepository {
-  getByRassegnaID(rassegnaID: number): Array<Foto>;
-  getRandom(quantity: number): Array<Foto>;
+  getByAlbumID(albumID: string): Promise<Array<Foto>>;
+  getRandom(quantity: number): Promise<Array<Foto>>;
 }

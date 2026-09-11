@@ -1,7 +1,7 @@
 export type Foto = {
   id: number,
-  rassegna_id: number,
-  contenuto: Buffer
+  album_id: string,
+  contenuto: Buffer | string
   larghezza: number,
   altezza: number
 }

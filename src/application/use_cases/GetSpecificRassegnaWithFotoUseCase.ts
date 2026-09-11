@@ -6,10 +6,12 @@ import { PastRassegnaWithPhotosMapper } from "../mappers/PastRassegnaWithPhotosM
 import { PastRassegnaWithFotoDTO } from "../dto/PastRassegnaWithFotoDTO";
 import { ILocationRepository } from "../repositories/ILocationRepository";
 import { ISponsorMaterialRepository } from "../repositories/ISponsorMaterialRepository";
+import { IAlbumRepository } from "../repositories/IAlbumRepository";
 
 export class GetSpecificRassegnaWithFotoUseCase {
   
   private rassegneRepository: IRassegneRepository;
+  private albumRepository: IAlbumRepository;
   private photosRepository: IPhotosRepository;
   private locationRepository: ILocationRepository;
   private sponsoringMaterialRepository: ISponsorMaterialRepository;
@@ -17,16 +19,18 @@ export class GetSpecificRassegnaWithFotoUseCase {
   public constructor(
     rassegneRepository: IRassegneRepository,
     locationRepository: ILocationRepository,
+    albumRepository: IAlbumRepository,
     photosRepository: IPhotosRepository,
     sponsoringMaterialRepository: ISponsorMaterialRepository
   ) {
     this.rassegneRepository = rassegneRepository;
     this.locationRepository = locationRepository;
+    this.albumRepository = albumRepository;
     this.photosRepository = photosRepository;
     this.sponsoringMaterialRepository = sponsoringMaterialRepository;
   }
 
-  public execute(id: number): QueryResult<PastRassegnaWithFotoDTO> {
+  public async execute(id: number): Promise<QueryResult<PastRassegnaWithFotoDTO>> {
     const pastEvent = this.rassegneRepository.getPastEvents()
       .filter(rassegna => rassegna.id === id)
       .pop()
@@ -37,7 +41,8 @@ export class GetSpecificRassegnaWithFotoUseCase {
     if (!correspondingLocation) {
       return QueryResult.fail(Error.failure("Something went wrong when fetching corresponding locations for past events!"))
     }
-    const attachedPhotos = this.photosRepository.getByRassegnaID(pastEvent.id) ?? []
+    const album = this.albumRepository.getByRassegnaID(pastEvent.id)
+    const attachedPhotos = await this.photosRepository.getByAlbumID(album.id) ?? []
     const sponsoringMaterial = this.sponsoringMaterialRepository.getByRassegnaID(pastEvent.id)
     return QueryResult.ok(PastRassegnaWithPhotosMapper.toDTO(pastEvent, correspondingLocation, attachedPhotos, sponsoringMaterial))
   }

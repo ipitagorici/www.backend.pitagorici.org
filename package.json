@@ -3,6 +3,7 @@
     "better-sqlite3": "^12.8.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "image-dimensions": "^2.5.1",
     "jest": "^30.5.1",
     "nodemon": "^3.1.14"
   },

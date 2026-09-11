@@ -2,6 +2,7 @@ import { ArticoloDTO } from "../../application/dto/ArticoloDTO";
 import { FotoDTO } from "../../application/dto/FotoDTO";
 import { PastRassegnaWithFotoDTO } from "../../application/dto/PastRassegnaWithFotoDTO";
 import { RassegnaProgrammataDTO } from "../../application/dto/RassegnaProgrammataDTO";
+import { IAlbumRepository } from "../../application/repositories/IAlbumRepository";
 import { IArticleRepository } from "../../application/repositories/IArticleRepository";
 import { ILocationRepository } from "../../application/repositories/ILocationRepository";
 import { INewspaperRepository } from "../../application/repositories/INewspaperRepository";
@@ -18,6 +19,7 @@ import { QueryResult } from "../../shared_kernel/Result";
 export default class DefaultController {
 
   private rassegneRepository: IRassegneRepository
+  private albumRepository: IAlbumRepository
   private photosRepository: IPhotosRepository
   private locationRepository: ILocationRepository
   private articlesRepository: IArticleRepository
@@ -27,12 +29,14 @@ export default class DefaultController {
   public constructor(
     rassegneRepository: IRassegneRepository,
     locationRepository: ILocationRepository,
+    albumRepository: IAlbumRepository,
     photosRepository: IPhotosRepository,
     articlesRepository: IArticleRepository,
     sponsoringMaterialRepository: ISponsorMaterialRepository,
     newspaperRepository: INewspaperRepository
   ) {
     this.rassegneRepository = rassegneRepository;
+    this.albumRepository = albumRepository;
     this.locationRepository = locationRepository;
     this.photosRepository = photosRepository;
     this.articlesRepository = articlesRepository;
@@ -44,16 +48,17 @@ export default class DefaultController {
     return new GetPastRassegneUseCase(this.rassegneRepository, this.locationRepository).execute()
   }
 
-  public getPastRassegnaWithPhotos(eventID: number): QueryResult<PastRassegnaWithFotoDTO> {
+  public async getPastRassegnaWithPhotos(eventID: number): Promise<QueryResult<PastRassegnaWithFotoDTO>> {
     return new GetSpecificRassegnaWithFotoUseCase(
       this.rassegneRepository,
       this.locationRepository,
+      this.albumRepository,
       this.photosRepository,
       this.sponsoringMaterialRepository
     ).execute(eventID)
   }
 
-  public getRandomPhotos(quantity: number): QueryResult<FotoDTO[]> {
+  public async getRandomPhotos(quantity: number): Promise<QueryResult<FotoDTO[]>> {
     return new GetRandomPhotosUseCase(this.photosRepository).execute(quantity)
   }
 
