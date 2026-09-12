@@ -16,7 +16,10 @@ type FlickrPhoto = {
 
 export default class FlickrPhotosRepository implements IPhotosRepository {
 
-  public constructor(private flickrAPIKey: string, private flickrUserID: string) { }
+  public constructor(
+    private flickrAPIKey: string,
+    private flickrUserID: string
+  ) { }
 
   private flickrPictureUrlFormatter(server: string, id: string, secret: string): string {
     return `https://live.staticflickr.com/${server}/${id}_${secret}`
@@ -30,20 +33,25 @@ export default class FlickrPhotosRepository implements IPhotosRepository {
     return `${this.flickrPictureUrlFormatter(server, id, secret)}_b.jpg`
   }
 
+  private async calculatePictureDimensions(imageUrl: string): Promise<{width: number, height: number}> {
+    const { body } = await fetch(imageUrl);
+    const { width, height, type } = await imageDimensionsFromStream(body);
+    const scaleFactor: number = 1024 / Math.max(width, height, 1);
+
+    return { width: width * scaleFactor, height: height * scaleFactor }
+  }
+
   private async flickrPhotoToPhotoMapper(flickrPhoto: FlickrPhoto, albumID: string): Promise<Foto> {
     const { server, id, secret, ...rest } = flickrPhoto;
     const fullImageUrl = this.flickrFullPictureUrlFormatter(server, id, secret)
     const thumbImageUrl = this.flickrThumbPictureUrlFormatter(server, id, secret)
 
-    const { body } = await fetch(thumbImageUrl);
-    const { width, height, type } = await imageDimensionsFromStream(body);
-
-    const scaleFactor: number = 1024 / Math.max(width, height, 1);
-
+    const { width, height } = await this.calculatePictureDimensions(thumbImageUrl)
+    
     return {
       id: Number(id),
-      altezza: height * scaleFactor,
-      larghezza: width * scaleFactor,
+      altezza: height,
+      larghezza: width,
       album_id: albumID,
       contenuto: fullImageUrl
     } as Foto;
