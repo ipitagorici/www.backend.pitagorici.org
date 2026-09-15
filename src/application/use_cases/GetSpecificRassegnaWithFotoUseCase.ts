@@ -7,43 +7,50 @@ import { PastRassegnaWithFotoDTO } from "../dto/PastRassegnaWithFotoDTO";
 import { ILocationRepository } from "../repositories/ILocationRepository";
 import { ISponsorMaterialRepository } from "../repositories/ISponsorMaterialRepository";
 import { IAlbumRepository } from "../repositories/IAlbumRepository";
+import { Foto } from "../../domain/entities/Foto";
+import { MaterialePubblicitario } from "../../domain/entities/MaterialePubblicitario";
+import { Fotografo } from "../../domain/entities/Fotografo";
 
 export class GetSpecificRassegnaWithFotoUseCase {
   
-  private rassegneRepository: IRassegneRepository;
-  private albumRepository: IAlbumRepository;
-  private photosRepository: IPhotosRepository;
-  private locationRepository: ILocationRepository;
-  private sponsoringMaterialRepository: ISponsorMaterialRepository;
-  
   public constructor(
-    rassegneRepository: IRassegneRepository,
-    locationRepository: ILocationRepository,
-    albumRepository: IAlbumRepository,
-    photosRepository: IPhotosRepository,
-    sponsoringMaterialRepository: ISponsorMaterialRepository
-  ) {
-    this.rassegneRepository = rassegneRepository;
-    this.locationRepository = locationRepository;
-    this.albumRepository = albumRepository;
-    this.photosRepository = photosRepository;
-    this.sponsoringMaterialRepository = sponsoringMaterialRepository;
-  }
+    private rassegneRepository: IRassegneRepository,
+    private locationRepository: ILocationRepository,
+    private albumRepository: IAlbumRepository,
+    private photosRepository: IPhotosRepository,
+    private sponsoringMaterialRepository: ISponsorMaterialRepository
+  ) { }
 
   public async execute(id: number): Promise<QueryResult<PastRassegnaWithFotoDTO>> {
-    const pastEvent = this.rassegneRepository.getPastEvents()
-      .filter(rassegna => rassegna.id === id)
-      .pop()
-    if (!pastEvent) {
+    const pastEventQuery = this.rassegneRepository.getPastEventByID(id)
+    if (pastEventQuery.isFailure()) {
       return QueryResult.fail(Error.notFound("Cannot find event with ID: " + id))
     }
-    const correspondingLocation = this.locationRepository.getByID(pastEvent.localita_id)
-    if (!correspondingLocation) {
+    const pastEvent = pastEventQuery.getValue()
+    
+    const correspondingLocationQuery = this.locationRepository.getByID(pastEvent.localita_id)
+    if (correspondingLocationQuery.isFailure()) {
       return QueryResult.fail(Error.failure("Something went wrong when fetching corresponding locations for past events!"))
     }
-    const album = this.albumRepository.getByRassegnaID(pastEvent.id)
-    const attachedPhotos = await this.photosRepository.getByAlbumID(album.id) ?? []
-    const sponsoringMaterial = this.sponsoringMaterialRepository.getByRassegnaID(pastEvent.id)
-    return QueryResult.ok(PastRassegnaWithPhotosMapper.toDTO(pastEvent, correspondingLocation, attachedPhotos, sponsoringMaterial))
+
+    const albumQuery = this.albumRepository.getByRassegnaID(pastEvent.id)
+    if (albumQuery.isFailure()) {
+      return QueryResult.fail(Error.notFound("Could not find photos album for event ID: " + pastEvent.id))
+    }
+
+    const albumID = albumQuery.getValue().id
+    const coverPhotoQuery = await this.photosRepository.getRassegnaCoverByAlbumID(albumID)
+    pastEvent.cover = coverPhotoQuery.isFailure() ? {} as Foto : coverPhotoQuery.getValue();
+    
+    const attachedPhotosQuery = await this.photosRepository.getByAlbumID(albumID)
+    const attachedPhotos = attachedPhotosQuery.isFailure() ? [] : attachedPhotosQuery.getValue()
+    
+    const creditsQuery = this.albumRepository.getCreditsByAlbumID(albumID)
+    const credits = creditsQuery.isFailure() ? [] as Fotografo[] : creditsQuery.getValue()
+
+    const sponsoringMaterialQuery = this.sponsoringMaterialRepository.getByRassegnaID(pastEvent.id)
+    const sponsoringMaterial = sponsoringMaterialQuery.isFailure() ? {} as MaterialePubblicitario : sponsoringMaterialQuery.getValue()
+    
+    return QueryResult.ok(PastRassegnaWithPhotosMapper.toDTO(pastEvent, correspondingLocationQuery.getValue(), { credits, pictures: attachedPhotos}, sponsoringMaterial))
   }
 }

@@ -1,14 +1,19 @@
 import { Database } from "better-sqlite3";
 import { ISponsorMaterialRepository } from "../../../application/repositories/ISponsorMaterialRepository";
 import { MaterialePubblicitario } from "../../../domain/entities/MaterialePubblicitario";
+import SqliteGenericRepository from "./SqliteGenericRepository";
+import { QueryResult } from "../../../shared_kernel/Result";
 
 export class SqliteSponsorMaterialRepository implements ISponsorMaterialRepository {
 
-  constructor(private database: Database) { }
+  private sqliteRepo: SqliteGenericRepository
   
-  getByRassegnaID(rassegnaID: number): MaterialePubblicitario {
-    const query = this.database.prepare("SELECT * FROM MATERIALI_PUBBLICITARI WHERE rassegna_programmata_id = ?")
-    return query.get(rassegnaID) as MaterialePubblicitario
+  public constructor(private database: Database) { 
+    this.sqliteRepo = new SqliteGenericRepository(database)
   }
   
+  getByRassegnaID(rassegnaID: number): QueryResult<MaterialePubblicitario> {
+    return this.sqliteRepo.get<MaterialePubblicitario>("SELECT * FROM MATERIALI_PUBBLICITARI WHERE rassegna_id = ?", rassegnaID)
+  }
+
 }

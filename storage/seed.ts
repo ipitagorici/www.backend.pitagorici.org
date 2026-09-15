@@ -2,22 +2,16 @@ import Database from "better-sqlite3";
 import path from "node:path";
 import fs from "node:fs";
 
-const db = new Database(path.resolve(__dirname, "../storage", "database.db"));
+const dbPath = path.resolve(__dirname, "../storage", "database.db")
+if (fs.existsSync(dbPath)) {
+  fs.unlinkSync(dbPath)
+}
+const db = new Database(dbPath);
 db.pragma("foreign_keys = ON");
 
 console.log("Inizializzazione del database...");
 const schema: string = fs.readFileSync(path.resolve(__dirname, "../storage", "schema.sql"), 'utf8');
-const seedSQL: string = `
--- Pulisci il database esistente (utile se esegui lo script più volte)
-DROP TABLE IF EXISTS ARTICOLI;
-DROP TABLE IF EXISTS FOTO;
-DROP TABLE IF EXISTS MATERIALI_PUBBLICITARI;
-DROP TABLE IF EXISTS RASSEGNE;
-DROP TABLE IF EXISTS TESTATE_GIORNALISTICHE;
-DROP TABLE IF EXISTS LOCALITA;
-DROP TABLE IF EXISTS ALBUM;
-`.concat(schema)
-.concat(`
+const initialData: string = `
 -- ==========================================
 -- INSERIMENTO DATI
 -- ==========================================
@@ -27,23 +21,63 @@ INSERT INTO TESTATE_GIORNALISTICHE (id, nome, icona) VALUES
 (3, 'Radio Studio Delta', 'data:image/png;base64,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'),
 (4, 'Resto del Carlino', 'data:image/webp;base64,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');
 
+INSERT INTO FOTOGRAFI (id, nome, cognome) VALUES
+(1, 'Marcello', 'Parini'),
+(2, 'Nicolas', 'Moltrasio');
+
 INSERT INTO LOCALITA (id, nome, via, citta, longitudine, latitudine) VALUES
 (1, 'Palazzo del Ridotto', 'Piazza Almerici, 12, 47521 Cesena FC', 'Cesena (FC)', 44.13844526390318, 12.243718483985203),
 (2, 'Rocca Malatestiana', 'Via Cia degli Ordelaffi, 8, 47521 Cesena FC', 'Cesena (FC)', 44.13652386966774, 12.240011710968458),
 (3, 'Hotel Savini', 'Via Alfonso Pinzon, 80, 47814 Bellaria-Igea Marina RN', 'Bellaria (RN)', 44.140555279344234, 12.476422586560256),
-(4, 'Teatro Petrella', 'Piazza S. Girolamo, 3, 47020 Longiano FC', 'Longiano (FC)', 44.075030669205034, 12.326814997474154);
+(4, 'Teatro Petrella', 'Piazza S. Girolamo, 3, 47020 Longiano FC', 'Longiano (FC)', 44.075030669205034, 12.326814997474154),
+(5, 'Casa di quartiere Giorgio Costa', 'Via Azzo Gardino, 44, 40122 Bologna (BO)', 'Bologna (BO)', 44.501918577889725, 11.335327268707617),
+(6, 'Cinema Teatro Moderno', 'Corso Giulio Perticari, 5, 47039 Savignano sul Rubicone FC', 'Savignano sul Rubicone (FC)', 44.09296857707762, 12.399643797526798),
+(7, 'Aula Magna - D.I.F.A. "Augusto Righi" dell''Università di Bologna', 'Via Irnerio, 46, 40126 Bologna BO', 'Bologna (BO)', 44.49950267670165, 11.35394999939257),
+(8, 'Teatro "Alessandro Bonci"', 'Piazza Mario Guidazzi, 8, 47521 Cesena FC', 'Cesena (FC)', 44.13617757030991, 12.24839297239169),
+(9, 'Rocca di Ravaldino', 'Via Giovanni dalle Bande Nere, 1, 47121 Forlì FC', 'Forlì (FC)', 44.21649490783814, 12.037138643559299);
 
-INSERT INTO RASSEGNE (id, nome, data, videoYT, descrizione, localita_id) VALUES
-(1, 'Notte Pitagorica', '2024-05-07', 'https://www.youtube.com/watch?v=nVibNQGm7Vg', 'Quando dai banchi di scuola la Matematica trasporta in luoghi oltre l''immaginazione.', 1),
-(2, 'Itinerari Cosmici', '2024-07-29', 'https://www.youtube.com/watch?v=ua4eGl-60rE', 'Un viaggio ai confini dell''Universo', 2),
-(3, 'Notte Pitagorica - Lions Edition', '2025-01-24', NULL, 'Incursione alla conviviale del Lions Club Rubicone', 3),
-(4, 'Notte Pitagorica - Al Petrella', '2025-04-05', 'https://www.youtube.com/watch?v=JFehYjFWBGI', 'L''eterno spettacolo della Matematica.', 4);
+INSERT INTO RASSEGNE (id, nome, sottotitolo, data, videoYT, descrizione, localita_id) VALUES
+(1, 'Notte Pitagorica', 'Quando dai banchi di scuola la Matematica trasporta in luoghi oltre l''immaginazione.', '2024-05-07', 'https://www.youtube.com/watch?v=nVibNQGm7Vg', NULL, 1),
+(2, 'Itinerari Cosmici', 'Un viaggio ai confini dell''Universo.', '2024-07-29', 'https://www.youtube.com/watch?v=ua4eGl-60rE', NULL, 2),
+(3, 'Notte Pitagorica - Lions Edition', 'Incursione alla conviviale del Lions Club Rubicone.', '2025-01-24', NULL, NULL, 3),
+(4, 'Notte Pitagorica - Al Petrella', 'L''eterno spettacolo della Matematica.', '2025-04-05', 'https://www.youtube.com/watch?v=JFehYjFWBGI', NULL, 4),
+(5, 'Estasi Pitagorica - Costarena', 'Dalle sorgenti della conoscenza ai confini dell''Universo.', '2025-07-01', NULL, '', 5),
+(6, 'Estasi Pitagorica - Savignano', 'L''eterno spettacolo della Matematica.', '2025-10-30', NULL, NULL, 6),
+(7, 'Cassini Astronomo Innamorato - Bologna', 'Haec insomni studio per gelidas noctes Coelitus deducta.', '2025-11-14', NULL, NULL, 7),
+(8, 'Estasi Pitagorica - Teatro Bonci', 'L''eterno spettacolo della matematica.', '2026-02-03', NULL, NULL, 8),
+(9, 'Notte Pitagorica', 'Libera nos a mate.', '2026-06-28', NULL, NULL, 1),
+(10, 'Cassini Astronomo Innamorato - Forlì', 'Haec insomni studio per gelidas noctes Coelitus deducta.', '2026-08-02', NULL, NULL, 9);
 
 INSERT INTO ALBUM (id, rassegna_id) VALUES 
 ('72177720320089939', 1),
 ('72177720320073362', 2),
 ('72177720323918596', 3),
-('72177720325032120', 4);
+('72177720325032120', 4),
+('72177720335627377', 5),
+('72177720335632336', 6),
+('72177720335631926', 7),
+('72177720335632121', 8),
+('72177720335659094', 9),
+('72177720335660369', 10);
+
+INSERT INTO FOTOGRAFI_ALBUM (id_fotografo, id_album) VALUES 
+(1, '72177720320089939'),
+(1, '72177720320073362'),
+(2, '72177720323918596'),
+(1, '72177720325032120'),
+(2, '72177720325032120'),
+(1, '72177720335627377'),
+(2, '72177720335627377'),
+(1, '72177720335632336'),
+(2, '72177720335632336'),
+(1, '72177720335631926'),
+(2, '72177720335631926'),
+(1, '72177720335632121'),
+(2, '72177720335632121'),
+(1, '72177720335659094'),
+(2, '72177720335659094'),
+(1, '72177720335660369'),
+(2, '72177720335660369');
 
 INSERT INTO ARTICOLI (rassegna_id, testata_id, data_pubblicazione, estratto, link) VALUES
 (1, 1, '2024-05-17', 'Protagonista la matematica, un successo la "Notte Pitagorica" all''Itt Pascal', 'https://www.cesenatoday.it/cronaca/2protagonistra-la-matemativa-un-successo-la-notte-pitagorica-all-itt-pascal.html'),
@@ -56,7 +90,10 @@ INSERT INTO ARTICOLI (rassegna_id, testata_id, data_pubblicazione, estratto, lin
 (3, 4, '2025-01-26', 'Giovani talenti protagonisti alla Notte Pitagorica del Pascal', 'https://www.ilrestodelcarlino.it/cesena/cronaca/giovani-talenti-protagonisti-alla-notte-d0656d2e'),
 (4, 2, '2025-04-03', 'La “Notte Pitagorica” dell''Itt Pascal al teatro Petrella di Longiano', 'https://www.corrierecesenate.it/la-notte-pitagorica-dellitt-pascal-al-teatro-petrella-di-longiano/'),
 (4, 1, '2025-04-03', 'La Notte Pitagorica dell''istituto Pascal sbarca al Petrella di Longiano', 'https://www.cesenatoday.it/eventi/la-notte-pitagorica-del-istituto-pascal-comandini-in-scena-al-petrella-5-aprile.html');
-`)
+`;
+
+const seedSQL: string = schema
+  .concat(initialData)
 
 try {
   db.exec(seedSQL);

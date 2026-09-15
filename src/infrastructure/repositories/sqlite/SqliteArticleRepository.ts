@@ -1,19 +1,23 @@
 import { Database } from "better-sqlite3";
 import { IArticleRepository } from "../../../application/repositories/IArticleRepository";
 import { Articolo } from "../../../domain/entities/Articolo";
+import { QueryResult } from "../../../shared_kernel/Result";
+import SqliteGenericRepository from "./SqliteGenericRepository";
 
 export class SqliteArticleRepository implements IArticleRepository {
 
-  public constructor(private database: Database) { }
+  private sqliteRepo: SqliteGenericRepository
   
-  public getAll(): Articolo[] {
-    const query = this.database.prepare("SELECT * FROM ARTICOLI")
-    return query.all() as Articolo[]
+  public constructor(private database: Database) { 
+    this.sqliteRepo = new SqliteGenericRepository(database)
+  }
+  
+  public getAll(): QueryResult<Articolo[]> {
+    return this.sqliteRepo.getMany<Articolo>("SELECT * FROM ARTICOLI")
   }
 
-  public getByRassegnaID(rassegnaID: number): Articolo[] {
-    const query = this.database.prepare("SELECT * FROM ARTICOLI WHERE rassegna_id = ?")
-    return query.all(rassegnaID) as Articolo[]
+  public getByRassegnaID(rassegnaID: number): QueryResult<Articolo[]> {
+    return this.sqliteRepo.getMany<Articolo>("SELECT * FROM ARTICOLI WHERE rassegna_id = ?", rassegnaID)
   }
 
 } 

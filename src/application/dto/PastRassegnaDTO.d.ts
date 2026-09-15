@@ -1,3 +1,4 @@
+import { Foto } from "../../domain/entities/Foto";
 import { Rassegna } from "../../domain/entities/Rassegna";
 import { Localita } from "../../domain/value_objects/Localita";
 

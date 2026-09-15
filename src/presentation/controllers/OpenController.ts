@@ -11,12 +11,11 @@ import { IRassegneRepository } from "../../application/repositories/IRassegneRep
 import { ISponsorMaterialRepository } from "../../application/repositories/ISponsorMaterialRepository";
 import { GetArticlesUseCase } from "../../application/use_cases/GetArticlesUseCase";
 import { GetPastRassegneUseCase } from "../../application/use_cases/GetPastRassegneUseCase";
-import { GetRandomPhotosUseCase } from "../../application/use_cases/GetRandomPhotosUseCase";
 import { GetScheduledRassegneUseCase } from "../../application/use_cases/GetScheduledRassegneUseCase";
 import { GetSpecificRassegnaWithFotoUseCase } from "../../application/use_cases/GetSpecificRassegnaWithFotoUseCase";
 import { QueryResult } from "../../shared_kernel/Result";
 
-export default class DefaultController {
+export default class OpenController {
 
   private rassegneRepository: IRassegneRepository
   private albumRepository: IAlbumRepository
@@ -45,7 +44,12 @@ export default class DefaultController {
   }
 
   public getPastRassegne() {
-    return new GetPastRassegneUseCase(this.rassegneRepository, this.locationRepository).execute()
+    return new GetPastRassegneUseCase(
+      this.rassegneRepository,
+      this.locationRepository,
+      this.albumRepository,
+      this.photosRepository
+    ).execute()
   }
 
   public async getPastRassegnaWithPhotos(eventID: number): Promise<QueryResult<PastRassegnaWithFotoDTO>> {
@@ -56,10 +60,6 @@ export default class DefaultController {
       this.photosRepository,
       this.sponsoringMaterialRepository
     ).execute(eventID)
-  }
-
-  public async getRandomPhotos(quantity: number): Promise<QueryResult<FotoDTO[]>> {
-    return new GetRandomPhotosUseCase(this.photosRepository).execute(quantity)
   }
 
   public getScheduledRassegne(): QueryResult<RassegnaProgrammataDTO[]> {

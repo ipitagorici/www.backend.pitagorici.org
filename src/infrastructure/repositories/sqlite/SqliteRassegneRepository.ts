@@ -2,20 +2,26 @@ import { Database } from "better-sqlite3";
 import { IRassegneRepository } from "../../../application/repositories/IRassegneRepository";
 import { Rassegna } from "../../../domain/entities/Rassegna";
 import { RassegnaProgrammata } from "../../../domain/entities/RassegnaProgrammata";
+import SqliteGenericRepository from "./SqliteGenericRepository";
+import { QueryResult } from "../../../shared_kernel/Result";
 
 export class SqliteRassegneRepository implements IRassegneRepository {
 
-  constructor(private database: Database) {}
+  private sqliteRepo: SqliteGenericRepository
   
-  public getScheduledEvents(): Array<RassegnaProgrammata> {
-    const query = this.database.prepare("SELECT * FROM RASSEGNE_PROGRAMMATE")
-    const result = query.all()
-    return result as Array<Rassegna>
+  public constructor(private database: Database) { 
+    this.sqliteRepo = new SqliteGenericRepository(database)
   }
   
-  public getPastEvents(): Array<Rassegna> {
-    const query = this.database.prepare("SELECT * FROM RASSEGNE")
-    const result = query.all()
-    return result as Array<Rassegna>
+  public getScheduledEvents(): QueryResult<RassegnaProgrammata[]> {
+    return this.sqliteRepo.getMany<RassegnaProgrammata>("SELECT * FROM RASSEGNE_PROGRAMMATE")
+  }
+  
+  public getPastEvents(): QueryResult<Rassegna[]> {
+    return this.sqliteRepo.getMany<Rassegna>("SELECT * FROM RASSEGNE")
+  }
+  
+  public getPastEventByID(id: number): QueryResult<Rassegna> {
+    return this.sqliteRepo.get<Rassegna>("SELECT * FROM RASSEGNE WHERE id = ?", id)
   }
 }

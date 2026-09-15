@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import DefaultController from "../controllers/DefaultController";
+import OpenController from "../controllers/OpenController";
 import { ErrorTypes } from "../../shared_kernel/ErrorTypes";
 import { Error } from "../../shared_kernel/Error";
 
@@ -10,7 +10,7 @@ const fatal = (error: Error, response: Response): void => {
   });
 }
 
-export default function OpenRouter(controller: DefaultController): Router {
+export default function OpenRouter(controller: OpenController): Router {
   const router = Router()
   
   router.get("/health", (_, res) => {
@@ -19,27 +19,13 @@ export default function OpenRouter(controller: DefaultController): Router {
     });
   });
   
-  router.get("/past-events", (_, res) => {
-    const pastEvents = controller.getPastRassegne()
+  router.get("/past-events", async (_, res) => {
+    const pastEvents = await controller.getPastRassegne()
     if (pastEvents.isFailure()) {
       fatal(pastEvents.getError(), res)
       return;
     }
-    res.status(200).send({
-      pastEvents: pastEvents.getValue()
-    })
-  })
-  
-  router.get("/random-photos", async (req, res) => {
-    const amountRequired: number = Number(req.query.amount)
-    const randomPhotos = await controller.getRandomPhotos(amountRequired)
-    if (randomPhotos.isFailure()) {
-      fatal(randomPhotos.getError(), res);
-      return;
-    }
-    res.status(200).send({
-      randomPhotos: randomPhotos.getValue()
-    })
+    res.status(200).send(pastEvents.getValue())
   })
   
   router.get("/all-articles", (_, res) => {
