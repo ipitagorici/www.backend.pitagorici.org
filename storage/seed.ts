@@ -11,7 +11,7 @@ db.pragma("foreign_keys = ON");
 
 console.log("Inizializzazione del database...");
 const schema: string = fs.readFileSync(path.resolve(__dirname, "../storage", "schema.sql"), 'utf8');
-const initialData: string = `
+let initialData: string = `
 -- ==========================================
 -- INSERIMENTO DATI
 -- ==========================================
@@ -36,17 +36,17 @@ INSERT INTO LOCALITA (id, nome, via, citta, longitudine, latitudine) VALUES
 (8, 'Teatro "Alessandro Bonci"', 'Piazza Mario Guidazzi, 8, 47521 Cesena FC', 'Cesena (FC)', 44.13617757030991, 12.24839297239169),
 (9, 'Rocca di Ravaldino', 'Via Giovanni dalle Bande Nere, 1, 47121 Forlì FC', 'Forlì (FC)', 44.21649490783814, 12.037138643559299);
 
-INSERT INTO RASSEGNE (id, nome, sottotitolo, data, videoYT, descrizione, localita_id) VALUES
-(1, 'Notte Pitagorica', 'Quando dai banchi di scuola la Matematica trasporta in luoghi oltre l''immaginazione.', '2024-05-07', 'https://www.youtube.com/watch?v=nVibNQGm7Vg', NULL, 1),
-(2, 'Itinerari Cosmici', 'Un viaggio ai confini dell''Universo.', '2024-07-29', 'https://www.youtube.com/watch?v=ua4eGl-60rE', NULL, 2),
-(3, 'Notte Pitagorica - Lions Edition', 'Incursione alla conviviale del Lions Club Rubicone.', '2025-01-24', NULL, NULL, 3),
-(4, 'Notte Pitagorica - Al Petrella', 'L''eterno spettacolo della Matematica.', '2025-04-05', 'https://www.youtube.com/watch?v=JFehYjFWBGI', NULL, 4),
-(5, 'Estasi Pitagorica - Costarena', 'Dalle sorgenti della conoscenza ai confini dell''Universo.', '2025-07-01', NULL, '', 5),
-(6, 'Estasi Pitagorica - Savignano', 'L''eterno spettacolo della Matematica.', '2025-10-30', NULL, NULL, 6),
-(7, 'Cassini Astronomo Innamorato - Bologna', 'Haec insomni studio per gelidas noctes Coelitus deducta.', '2025-11-14', NULL, NULL, 7),
-(8, 'Estasi Pitagorica - Teatro Bonci', 'L''eterno spettacolo della matematica.', '2026-02-03', NULL, NULL, 8),
-(9, 'Notte Pitagorica', 'Libera nos a mate.', '2026-06-28', NULL, NULL, 1),
-(10, 'Cassini Astronomo Innamorato - Forlì', 'Haec insomni studio per gelidas noctes Coelitus deducta.', '2026-08-02', NULL, NULL, 9);
+INSERT INTO RASSEGNE (id, stato, nome, sottotitolo, data, videoYT, descrizione, localita_id, link_prenotazione) VALUES
+(1, 'CONCLUSA', 'Notte Pitagorica', 'Quando dai banchi di scuola la Matematica trasporta in luoghi oltre l''immaginazione.', '2024-05-07', 'https://www.youtube.com/watch?v=nVibNQGm7Vg', NULL, 1, NULL),
+(2, 'CONCLUSA', 'Itinerari Cosmici', 'Un viaggio ai confini dell''Universo.', '2024-07-29', 'https://www.youtube.com/watch?v=ua4eGl-60rE', NULL, 2, NULL),
+(3, 'CONCLUSA', 'Notte Pitagorica - Lions Edition', 'Incursione alla conviviale del Lions Club Rubicone.', '2025-01-24', NULL, NULL, 3, NULL),
+(4, 'CONCLUSA', 'Notte Pitagorica - Al Petrella', 'L''eterno spettacolo della Matematica.', '2025-04-05', 'https://www.youtube.com/watch?v=JFehYjFWBGI', NULL, 4, NULL),
+(5, 'CONCLUSA', 'Estasi Pitagorica - Costarena', 'Dalle sorgenti della conoscenza ai confini dell''Universo.', '2025-07-01', NULL, '', 5, NULL),
+(6, 'CONCLUSA', 'Estasi Pitagorica - Savignano', 'L''eterno spettacolo della Matematica.', '2025-10-30', NULL, NULL, 6, NULL),
+(7, 'CONCLUSA', 'Cassini Astronomo Innamorato - Bologna', 'Haec insomni studio per gelidas noctes Coelitus deducta.', '2025-11-14', NULL, NULL, 7, NULL),
+(8, 'CONCLUSA', 'Estasi Pitagorica - Teatro Bonci', 'L''eterno spettacolo della matematica.', '2026-02-03', NULL, NULL, 8, NULL),
+(9, 'CONCLUSA', 'Notte Pitagorica', 'Libera nos a mate.', '2026-06-28', NULL, NULL, 1, NULL),
+(10, 'CONCLUSA',  'Cassini Astronomo Innamorato - Forlì', 'Haec insomni studio per gelidas noctes Coelitus deducta.', '2026-08-02', NULL, NULL, 9, NULL);
 
 INSERT INTO ALBUM (id, rassegna_id) VALUES 
 ('72177720320089939', 1),
@@ -92,9 +92,48 @@ INSERT INTO ARTICOLI (rassegna_id, testata_id, data_pubblicazione, estratto, lin
 (4, 1, '2025-04-03', 'La Notte Pitagorica dell''istituto Pascal sbarca al Petrella di Longiano', 'https://www.cesenatoday.it/eventi/la-notte-pitagorica-del-istituto-pascal-comandini-in-scena-al-petrella-5-aprile.html');
 `;
 
+let head = "INSERT INTO MATERIALI_PUBBLICITARI (id, rassegna_id, nome, contenuto, altezza, larghezza) VALUES\n"
+const partial = []
+const typicalA4size = {
+  width: 2480 / 2,
+  height: 3508 / 2,
+}
+
+const getBase64Encoding = (filePath: string) => {
+  const data = fs.readFileSync(filePath)
+  return Buffer.from(data).toString('base64')
+}
+
+for (let i = 1; i <= 10; i++) {
+  const locandinaPath = path.resolve(__dirname, "../", "storage/", "locandine/", `${i}.png`);
+  partial.push([`(${i}, ${i}, 'Locandina', '${getBase64Encoding(locandinaPath)}', ${typicalA4size.height}, ${typicalA4size.width})`])
+}
+initialData += (head + partial.join(",\n") + ";\n")
+
+const sponsorsPath = (filename: string) => `${path.resolve(__dirname, "../", "storage/", "sponsors/")}/${filename}`
+
+const newSponsorRowString = (nome: string, imgName: string) => {
+  return `('${nome}', '${getBase64Encoding(sponsorsPath(imgName))}')`
+}
+
+initialData += `INSERT INTO SPONSORS (nome, logo) VALUES
+${newSponsorRowString("Crédit Agricole", "ca-2lines-h-rvb.png")},
+${newSponsorRowString("Centro Usato", "logo-centro-usato.png")},
+${newSponsorRowString("Coverplast", "logo-coverplast.png")},
+${newSponsorRowString("Elfi S.P.A.", "logo-elfifinpolo-no-bg.png")},
+${newSponsorRowString("Emilia Romagna Teatro Fondazione", "logo-ERT-colore-no-bg.png")},
+${newSponsorRowString("Famila", "logo-famila.png")},
+${newSponsorRowString("Mobilificio Baruzzi", "logo-mob-baruzzi.png")},
+${newSponsorRowString("Orogel fresco", "logo-orogel.png")},
+${newSponsorRowString("Pizzeria Fuoriporta", "logo-pizzeria-fuoriporta.png")},
+${newSponsorRowString("Regione Emilia Romagna", "logo-regione-er.png")},
+${newSponsorRowString("Romagna Iniziative", "logo-romagna-iniziative.png")};
+`
+
 const seedSQL: string = schema
   .concat(initialData)
 
+console.log(initialData)
 try {
   db.exec(seedSQL);
   console.log("[SUCCESS] Database popolato con successo!");

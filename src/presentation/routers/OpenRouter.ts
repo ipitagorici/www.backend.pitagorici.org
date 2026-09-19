@@ -43,9 +43,7 @@ export default function OpenRouter(controller: OpenController): Router {
       fatal(nextEvents.getError(), res);
       return;
     }
-    res.status(200).send({
-      events: nextEvents.getValue()
-    })
+    res.status(200).send(nextEvents.getValue());
   })
 
   router.get("/past-event/:id", async (req, res) => {
@@ -56,6 +54,15 @@ export default function OpenRouter(controller: OpenController): Router {
       return;
     }
     res.status(200).send(event.getValue())
+  })
+
+  router.get("/sponsors", (req, res) => {
+    const sponsors = controller.getSponsors()
+    if (sponsors.isFailure()) {
+      fatal(sponsors.getError(), res);
+      return;
+    }
+    res.status(200).send(sponsors.getValue())
   })
   
   return router

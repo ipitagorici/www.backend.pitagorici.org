@@ -51,6 +51,11 @@ export class GetSpecificRassegnaWithFotoUseCase {
     const sponsoringMaterialQuery = this.sponsoringMaterialRepository.getByRassegnaID(pastEvent.id)
     const sponsoringMaterial = sponsoringMaterialQuery.isFailure() ? {} as MaterialePubblicitario : sponsoringMaterialQuery.getValue()
     
-    return QueryResult.ok(PastRassegnaWithPhotosMapper.toDTO(pastEvent, correspondingLocationQuery.getValue(), { credits, pictures: attachedPhotos}, sponsoringMaterial))
+    return QueryResult.ok(PastRassegnaWithPhotosMapper.toDTO(
+      pastEvent,
+      correspondingLocationQuery.getValue(),
+      { credits, pictures: attachedPhotos },
+      sponsoringMaterial
+    ))
   }
 }

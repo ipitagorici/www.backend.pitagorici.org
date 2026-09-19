@@ -20,23 +20,14 @@ CREATE TABLE IF NOT EXISTS TESTATE_GIORNALISTICHE (
     icona TEXT -- URL o percorso file dell'icona
 );
 
--- 2. Tabelle con dipendenze semplici
-CREATE TABLE IF NOT EXISTS RASSEGNE_PROGRAMMATE (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT NOT NULL,
-    data TEXT NOT NULL, -- SQLite usa stringhe ISO8601 per le date
-    sottotitolo TEXT,
-    descrizione TEXT,
-    link_prenotazione TEXT,
-    localita_id INTEGER NOT NULL,
-    FOREIGN KEY (localita_id) REFERENCES LOCALITA(id)
-);
-
 CREATE TABLE IF NOT EXISTS RASSEGNE (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    stato TEXT NOT NULL CHECK (stato IN ('PROGRAMMATA', 'CONCLUSA')),
     nome TEXT NOT NULL,
     data TEXT NOT NULL,
+    ora TEXT,
     videoYT TEXT, -- Link al video YouTube
+    link_prenotazione TEXT,
     sottotitolo TEXT,
     descrizione TEXT,
     localita_id INTEGER NOT NULL,
@@ -60,7 +51,7 @@ CREATE TABLE IF NOT EXISTS FOTOGRAFI_ALBUM (
 -- 3. Tabelle dipendenti da Rassegne
 CREATE TABLE IF NOT EXISTS MATERIALI_PUBBLICITARI (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    rassegna_id INTEGER NOT NULL, -- può essere programmata o già svolta
+    rassegna_id INTEGER NOT NULL REFERENCES RASSEGNE(id) ON DELETE CASCADE,
     nome TEXT NOT NULL,
     contenuto TEXT NOT NULL,
     altezza INTEGER,
@@ -76,4 +67,10 @@ CREATE TABLE IF NOT EXISTS ARTICOLI (
     link TEXT,
     FOREIGN KEY (rassegna_id) REFERENCES RASSEGNE(id) ON DELETE CASCADE,
     FOREIGN KEY (testata_id) REFERENCES TESTATE_GIORNALISTICHE(id)
+);
+
+CREATE TABLE IF NOT EXISTS SPONSORS (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    logo TEXT
 );

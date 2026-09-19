@@ -11,11 +11,11 @@ export default class SqliteGenericRepository {
     try {
       const result = params ? command.get(...params) : command.get()
       if (!result) {
-        return QueryResult.fail(Error.failure("Something went wrong when querying with the following parameters: " + {...params}))
+        return QueryResult.fail(Error.failure("Something went wrong when querying with the following parameters: " + { ...params }))
       }
       return QueryResult.ok(result as T)
     } catch (error) {
-      return QueryResult.fail(Error.failure("Something went wrong when trying to execute command with the following parameters: " + {...params}))
+      return QueryResult.fail(Error.failure("Something went wrong when trying to execute command with the following parameters: " + { ...params }))
     }
   }
   

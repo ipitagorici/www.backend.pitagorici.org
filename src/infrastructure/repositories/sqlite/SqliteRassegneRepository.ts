@@ -14,14 +14,14 @@ export class SqliteRassegneRepository implements IRassegneRepository {
   }
   
   public getScheduledEvents(): QueryResult<RassegnaProgrammata[]> {
-    return this.sqliteRepo.getMany<RassegnaProgrammata>("SELECT * FROM RASSEGNE_PROGRAMMATE")
+    return this.sqliteRepo.getMany<RassegnaProgrammata>("SELECT * FROM RASSEGNE WHERE stato = 'PROGRAMMATA'")
   }
   
   public getPastEvents(): QueryResult<Rassegna[]> {
-    return this.sqliteRepo.getMany<Rassegna>("SELECT * FROM RASSEGNE")
+    return this.sqliteRepo.getMany<Rassegna>("SELECT * FROM RASSEGNE WHERE stato = 'CONCLUSA'")
   }
   
   public getPastEventByID(id: number): QueryResult<Rassegna> {
-    return this.sqliteRepo.get<Rassegna>("SELECT * FROM RASSEGNE WHERE id = ?", id)
+    return this.sqliteRepo.get<Rassegna>("SELECT * FROM RASSEGNE WHERE stato = 'CONCLUSA' AND id = ?", id)
   }
 }

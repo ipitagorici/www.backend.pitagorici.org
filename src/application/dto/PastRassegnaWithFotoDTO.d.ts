@@ -8,8 +8,6 @@ export type PastRassegnaWithFotoDTO = PastRassegnaDTO &
   foto: {
     crediti: Fotografo[],
     immagini: Foto[]
-  } &
-  {
-    locandina?: Omit<MaterialePubblicitario, "rassegna_id">
-  }
+  },
+  locandina?: Omit<MaterialePubblicitario, "rassegna_id">
 };

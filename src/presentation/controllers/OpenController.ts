@@ -1,3 +1,4 @@
+import { SponsorDTO } from "@/application/dto/SponsorDTO";
 import { ArticoloDTO } from "../../application/dto/ArticoloDTO";
 import { FotoDTO } from "../../application/dto/FotoDTO";
 import { PastRassegnaWithFotoDTO } from "../../application/dto/PastRassegnaWithFotoDTO";
@@ -14,34 +15,21 @@ import { GetPastRassegneUseCase } from "../../application/use_cases/GetPastRasse
 import { GetScheduledRassegneUseCase } from "../../application/use_cases/GetScheduledRassegneUseCase";
 import { GetSpecificRassegnaWithFotoUseCase } from "../../application/use_cases/GetSpecificRassegnaWithFotoUseCase";
 import { QueryResult } from "../../shared_kernel/Result";
+import { GetSponsorsUseCase } from "@/application/use_cases/GetSponsorsUseCase";
+import { ISponsorsRepository } from "@/application/repositories/ISponsorsRepository";
 
 export default class OpenController {
-
-  private rassegneRepository: IRassegneRepository
-  private albumRepository: IAlbumRepository
-  private photosRepository: IPhotosRepository
-  private locationRepository: ILocationRepository
-  private articlesRepository: IArticleRepository
-  private sponsoringMaterialRepository: ISponsorMaterialRepository
-  private newspaperRepository: INewspaperRepository
   
   public constructor(
-    rassegneRepository: IRassegneRepository,
-    locationRepository: ILocationRepository,
-    albumRepository: IAlbumRepository,
-    photosRepository: IPhotosRepository,
-    articlesRepository: IArticleRepository,
-    sponsoringMaterialRepository: ISponsorMaterialRepository,
-    newspaperRepository: INewspaperRepository
-  ) {
-    this.rassegneRepository = rassegneRepository;
-    this.albumRepository = albumRepository;
-    this.locationRepository = locationRepository;
-    this.photosRepository = photosRepository;
-    this.articlesRepository = articlesRepository;
-    this.sponsoringMaterialRepository = sponsoringMaterialRepository;
-    this.newspaperRepository = newspaperRepository;
-  }
+    private rassegneRepository: IRassegneRepository,
+    private locationRepository: ILocationRepository,
+    private albumRepository: IAlbumRepository,
+    private photosRepository: IPhotosRepository,
+    private articlesRepository: IArticleRepository,
+    private sponsoringMaterialRepository: ISponsorMaterialRepository,
+    private newspaperRepository: INewspaperRepository,
+    private sponsorsRepository: ISponsorsRepository
+  ) { }
 
   public getPastRassegne() {
     return new GetPastRassegneUseCase(
@@ -68,6 +56,10 @@ export default class OpenController {
 
   public getArticles(): QueryResult<ArticoloDTO[]> {
     return new GetArticlesUseCase(this.articlesRepository, this.newspaperRepository).execute()
+  }
+
+  public getSponsors(): QueryResult<SponsorDTO[]> {
+    return new GetSponsorsUseCase(this.sponsorsRepository).execute()
   }
   
   public getHealth(): string {

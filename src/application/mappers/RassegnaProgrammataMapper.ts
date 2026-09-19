@@ -5,13 +5,31 @@ import { RassegnaProgrammataDTO } from "../dto/RassegnaProgrammataDTO";
 
 export class RassegnaProgrammataMapper {
   public static toDTO(rassegna: RassegnaProgrammata, localita: Localita, locandina: MaterialePubblicitario): RassegnaProgrammataDTO {
-    const { localita_id, ...restRassegna } = rassegna;
-    const { id, ...restLocalita } = localita;
-    const { rassegna_id, ...restLocandina } = locandina;
+    const { id, nome, data, ora, descrizione, link_prenotazione, sottotitolo } = rassegna;
+    const { nome: nomeLocalita, via, citta, latitudine, longitudine } = localita;
+    const { id: idLocandina, nome: nomeLocandina, altezza, larghezza, contenuto } = locandina;
     return {
-      ...restRassegna,
-      localita: { ...restLocalita },
-      locandina: { ...restLocandina }
-    } as RassegnaProgrammataDTO;
+      id,
+      nome,
+      sottotitolo,
+      data,
+      ora,
+      descrizione,
+      link_prenotazione,
+      localita: {
+        nome: nomeLocalita,
+        via,
+        citta,
+        latitudine,
+        longitudine
+      },
+      locandina: {
+        id: idLocandina,
+        nome: nomeLocandina,
+        altezza,
+        larghezza,
+        contenuto
+      }
+    }
   }
 }

@@ -11,16 +11,28 @@ export class PastRassegnaWithPhotosMapper {
     photos: { credits: Fotografo[]; pictures: Foto[] },
     locandina?: MaterialePubblicitario,
   ): PastRassegnaWithFotoDTO {
-    const { localita_id, ...restRassegna } = rassegna;
-    const { rassegna_id, ...restLocandina } = locandina ?? {};
+    const { id, nome, data, ora, descrizione, videoYT, cover, sottotitolo } = rassegna;
     return {
-      ...restRassegna,
-      localita: location,
+      id,
+      sottotitolo,
+      nome,
+      data,
+      ora,
+      descrizione,
+      videoYT,
+      cover,
+      localita: { nome: location.nome, citta: location.citta },
+      locandina: locandina ? {
+        id: locandina.id,
+        nome: locandina.nome,
+        altezza: locandina.altezza,
+        larghezza: locandina.larghezza,
+        contenuto: locandina.contenuto
+      } : { } as Omit<MaterialePubblicitario, "rassegna_id">,
       foto: {
         crediti: photos.credits,
-        immagini: photos.pictures
-      },
-      locandina: { ...restLocandina },
-    } as PastRassegnaWithFotoDTO;
+        immagini: photos.pictures,
+      }
+    }
   }
 }

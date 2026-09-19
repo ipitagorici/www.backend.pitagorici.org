@@ -20,7 +20,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "npx tsx --test tests/**/*.test.ts",
-    "dev": "nodemon --exec ts-node src/presentation/entrypoint.ts",
+    "dev": "nodemon --exec tsx src/presentation/entrypoint.ts",
     "build": "tsc",
     "start": "node dist/presentation/entrypoint.ts"
   }
