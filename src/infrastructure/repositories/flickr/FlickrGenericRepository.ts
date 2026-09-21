@@ -38,11 +38,11 @@ class FlickrPhotoCache {
     const now = new Date()
     const newItem: FlickrPhotoCacheItem = { insertedAt: now, photos };
     if (!this.cache.has(albumID)) {
-      this.cache[albumID] = newItem;
+      this.cache.set(albumID, newItem);
       return;
     }
     if (this.hasExpired(albumID)) {
-      this.cache[albumID] = newItem;
+      this.cache.set(albumID, newItem);
     }
   }
 
@@ -89,7 +89,7 @@ export abstract class FlickrGenericRepository {
 
   protected async getPhotos(albumID: string): Promise<Array<FlickrPhoto>> {
     if (this.cache.canUse(albumID)) {
-      return new Promise(() => { return this.cache.get(albumID)})
+      return this.cache.get(albumID)
     }
     const baseURL = "https://www.flickr.com/services/rest/?";
     const requestURL = baseURL

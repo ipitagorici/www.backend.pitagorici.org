@@ -3,5 +3,5 @@ interface Date {
 }
 
 Date.prototype.differenceInSeconds = function (this, endDate: Date): number {
-  return Math.floor((endDate.getTime() - this.getTime()) / 1000)
+  return Math.abs(Math.floor((endDate.getTime() - this.getTime()) / 1000))
 };

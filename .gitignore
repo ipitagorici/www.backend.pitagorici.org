@@ -139,3 +139,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 # Mac storage files
 .DS_Store
+
+# SQLite database artifacts
+*-wal
+*-shm
